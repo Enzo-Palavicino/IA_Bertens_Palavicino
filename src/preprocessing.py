@@ -1,5 +1,7 @@
 """Basic image preprocessing helpers for future experiments."""
 
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +24,22 @@ def resize_image(image: Image.Image, size: tuple[int, int]) -> Image.Image:
 def flatten_image(image: Image.Image) -> np.ndarray:
     """Convert an image into a 1D numpy array for pixel-based baselines."""
     return np.asarray(image, dtype=np.float32).reshape(-1)
+
+
+def image_path_to_flattened_array(path: str | Path, size: tuple[int, int]) -> np.ndarray:
+    """Load, resize and flatten a single image path into a feature vector."""
+    image = load_image_rgb(path)
+    image = resize_image(image, size=size)
+    return flatten_image(image)
+
+
+def build_flattened_feature_matrix(
+    image_paths: list[str | Path],
+    size: tuple[int, int],
+) -> np.ndarray:
+    """Convert a list of image paths into a 2D feature matrix."""
+    features = [image_path_to_flattened_array(path, size=size) for path in image_paths]
+    return np.vstack(features).astype(np.float32)
 
 
 def split_data(

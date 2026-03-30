@@ -1,5 +1,7 @@
 """Reusable utilities for loading DocExplore query images."""
 
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Iterable, Sequence
 
@@ -86,3 +88,8 @@ def load_binary_class_dataset(
 
     y, class_names = encode_string_labels(string_labels, class_names=selected_classes)
     return image_paths, y, class_names
+
+
+def decode_numeric_labels(y: Sequence[int], class_names: Sequence[str]) -> list[str]:
+    """Convert numeric labels back into class-name strings."""
+    return [class_names[int(label)] for label in y]

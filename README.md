@@ -2,78 +2,187 @@
 
 ## Hito 1
 
-El Hito 1 se enfoca en preparar una primera base de trabajo sobre el dataset DocExplore. En esta fase inicial se deja lista la estructura del proyecto y una inspeccion del dataset para identificar clases disponibles, cantidad de ejemplos por clase y cantidad de paginas completas disponibles.
+El Hito 1 implementa un pipeline binario reproducible sobre queries visuales del dataset DocExplore. El experimento por defecto compara las clases `marqeur` y `simple_sep` con dos enfoques:
+
+- `baseline_pixels`: RGB redimensionado + flatten + `StandardScaler` + `LogisticRegression`
+- `clip_logreg`: embeddings CLIP (`openai/clip-vit-base-patch32`) + `LogisticRegression`
+
+En este hito si se implementa:
+
+- inspeccion inicial del dataset
+- clasificacion binaria entre dos clases de queries
+- metricas de clasificacion
+- matriz de confusion
+- analisis por threshold
+- seleccion de ejemplos TP / FP / TN / FN
+- notebook de evidencia
 
 Todavia no se implementa:
-- retrieval sobre paginas completas
-- localizacion dentro de pagina
-- bounding boxes
-- CLIP
-- entrenamiento del pipeline final
 
-## Estructura del repositorio
+- retrieval sobre paginas completas
+- ranking de paginas
+- localizacion espacial dentro de pagina
+- bounding boxes
+- sliding windows
+- mAP de deteccion o localizacion
+
+## Estructura relevante
 
 ```text
 .
 ├── data/
-│   └── raw/
-│       ├── DocExplore_images/
-│       ├── DocExplore_queries_web/
-│       └── evaluation_kit_v2/
-├── docs/
+│   ├── raw/
+│   │   ├── DocExplore_images/
+│   │   ├── DocExplore_queries_web/
+│   │   └── evaluation_kit_v2/
+│   └── processed/
+│       └── clip_embeddings/
 ├── notebooks/
+│   └── hito1_doc_explore.ipynb
 ├── outputs/
 │   ├── figures/
 │   ├── metrics/
 │   └── models/
-├── references/
 └── src/
 ```
 
 ## Dataset
 
-El dataset debe estar disponible localmente en:
+El dataset debe existir localmente en:
 
-- `data/raw/DocExplore_queries_web/`: queries organizadas por clase en subcarpetas
-- `data/raw/DocExplore_images/`: paginas completas del corpus
-- `data/raw/evaluation_kit_v2/`: material auxiliar de evaluacion
+- `data/raw/DocExplore_queries_web/`
+- `data/raw/DocExplore_images/`
+- `data/raw/evaluation_kit_v2/`
 
-La configuracion base del proyecto usa por defecto las clases:
+La inspeccion inicial ya confirmo 35 clases y el experimento por defecto usa:
 
-- `marqeur`
-- `simple_sep`
+- clase 0: `marqeur`
+- clase 1: `simple_sep`
 
-## Inspeccion inicial del dataset
+## Instalacion
 
-En esta fase ya existe un script de inspeccion para:
+1. Crear entorno virtual:
 
-- detectar clases por nombre de carpeta
-- contar imagenes validas por clase
-- ignorar archivos no imagen y archivos corruptos
-- guardar conteos en `outputs/metrics/class_counts.csv`
-- guardar un grafico en `outputs/figures/class_distribution.png`
-- contar paginas completas validas en `data/raw/DocExplore_images/`
+```bash
+python3 -m venv .venv
+```
 
-## Como ejecutar
+2. Activarlo:
 
-1. Instala dependencias:
+macOS / Linux:
+
+```bash
+source .venv/bin/activate
+```
+
+Windows PowerShell:
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+3. Instalar dependencias:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Ejecuta la inspeccion:
+Si tu entorno no expone `python`, usa `python3` en los comandos de ejecucion.
+
+## Ejecucion
+
+### 1. Inspeccion del dataset
 
 ```bash
 python src/dataset_inspection.py
 ```
 
-Si tu entorno no expone el alias `python`, usa:
+### 2. Pipeline completo del Hito 1
+
+Corre ambos experimentos por defecto:
 
 ```bash
-python3 src/dataset_inspection.py
+python src/run_hito1.py
 ```
 
-## Nota sobre el alcance
+Solo baseline:
 
-Esta etapa solo deja lista la base del proyecto y la inspeccion del dataset. La etapa de retrieval y la busqueda/localizacion de queries dentro de una pagina completa quedan fuera del alcance actual.
+```bash
+python src/run_hito1.py --experiment baseline
+```
+
+Solo CLIP:
+
+```bash
+python src/run_hito1.py --experiment clip
+```
+
+Cambiar clases:
+
+```bash
+python src/run_hito1.py --class-a marqeur --class-b simple_sep
+```
+
+Forzar recomputo de embeddings CLIP:
+
+```bash
+python src/run_hito1.py --experiment clip --force-recompute-embeddings
+```
+
+## Outputs generados
+
+### Inspeccion
+
+- `outputs/metrics/class_counts.csv`
+- `outputs/figures/class_distribution.png`
+
+### Baseline de pixeles
+
+- `outputs/metrics/baseline_pixels_metrics.json`
+- `outputs/metrics/baseline_pixels_classification_report.json`
+- `outputs/metrics/baseline_pixels_thresholds.csv`
+- `outputs/metrics/baseline_pixels_predictions.csv`
+- `outputs/metrics/baseline_pixels_examples.csv`
+- `outputs/metrics/baseline_pixels_summary.md`
+- `outputs/figures/baseline_pixels_confusion_matrix.png`
+- `outputs/figures/baseline_pixels_threshold_curves.png`
+- `outputs/figures/baseline_pixels_examples.png`
+- `outputs/models/baseline_pixels_model.joblib`
+
+### CLIP + Logistic Regression
+
+- `data/processed/clip_embeddings/...`
+- `outputs/metrics/clip_logreg_metrics.json`
+- `outputs/metrics/clip_logreg_classification_report.json`
+- `outputs/metrics/clip_logreg_thresholds.csv`
+- `outputs/metrics/clip_logreg_predictions.csv`
+- `outputs/metrics/clip_logreg_examples.csv`
+- `outputs/metrics/clip_logreg_summary.md`
+- `outputs/figures/clip_logreg_confusion_matrix.png`
+- `outputs/figures/clip_logreg_threshold_curves.png`
+- `outputs/figures/clip_logreg_examples.png`
+- `outputs/models/clip_logreg_model.joblib`
+
+### Comparacion final
+
+- `outputs/metrics/hito1_experiment_comparison.csv`
+- `outputs/metrics/hito1_experiment_comparison.md`
+
+## Notebook de evidencia
+
+El notebook `notebooks/hito1_doc_explore.ipynb` resume:
+
+- objetivo y alcance del Hito 1
+- exploracion del dataset
+- seleccion de clases
+- baseline con pixeles
+- CLIP + Logistic Regression
+- metricas
+- matriz de confusion
+- threshold analysis
+- ejemplos TP / FP / TN / FN
+- comparacion breve entre ambos enfoques
+
+## Nota sobre CLIP
+
+La primera ejecucion de `clip_logreg` puede tardar mas porque necesita descargar el modelo `openai/clip-vit-base-patch32` si no esta cacheado localmente. Luego los embeddings quedan reutilizables en `data/processed/clip_embeddings/`.

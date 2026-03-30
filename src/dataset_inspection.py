@@ -60,9 +60,10 @@ def plot_class_distribution(
 ) -> None:
     """Save a bar chart for the classes with the most valid images."""
     plot_df = counts_df.head(top_n).sort_values(by="valid_images", ascending=True)
+    colors = sns.color_palette("Blues_r", n_colors=len(plot_df))
 
     plt.figure(figsize=(10, 8))
-    sns.barplot(data=plot_df, x="valid_images", y="class_name", palette="Blues_r")
+    plt.barh(plot_df["class_name"], plot_df["valid_images"], color=colors)
     plt.title(f"Top {len(plot_df)} classes by valid images")
     plt.xlabel("Valid images")
     plt.ylabel("Class")
