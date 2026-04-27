@@ -13,6 +13,9 @@ HITO2_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 os.environ.setdefault("MPLCONFIGDIR", str((HITO2_CACHE_DIR / "matplotlib").resolve()))
 os.environ.setdefault("XDG_CACHE_HOME", str(HITO2_CACHE_DIR.resolve()))
 
+import matplotlib
+matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
