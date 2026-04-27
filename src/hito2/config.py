@@ -1,0 +1,69 @@
+"""Local configuration for Hito 2 data preparation and training."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from src.config import CLIP_BATCH_SIZE, CLIP_EMBEDDINGS_DIR, CLIP_MODEL_ID, OUTPUTS_DIR, QUERIES_DIR, RANDOM_STATE, ROOT_DIR
+
+HITO2_OUTPUT_DIR = OUTPUTS_DIR / "hito2"
+HITO2_MANIFEST_DIR = HITO2_OUTPUT_DIR / "manifests"
+HITO2_SPLIT_DIR = HITO2_OUTPUT_DIR / "splits"
+HITO2_CLIP_MLP_OUTPUT_DIR = HITO2_OUTPUT_DIR / "clip_mlp"
+HITO2_CLIP_MLP_METRICS_DIR = HITO2_CLIP_MLP_OUTPUT_DIR / "metrics"
+HITO2_CLIP_MLP_FIGURES_DIR = HITO2_CLIP_MLP_OUTPUT_DIR / "figures"
+HITO2_CLIP_MLP_MODELS_DIR = HITO2_CLIP_MLP_OUTPUT_DIR / "models"
+HITO2_CLIP_MLP_PREDICTIONS_DIR = HITO2_CLIP_MLP_OUTPUT_DIR / "predictions"
+
+HITO2_CLIP_EMBEDDINGS_DIR = CLIP_EMBEDDINGS_DIR / "hito2" / "clip_mlp"
+HITO2_CLIP_EMBEDDING_EXPERIMENT_NAME = "hito2/clip_mlp"
+
+DEFAULT_QUERY_DATASET_DIR = QUERIES_DIR
+DEFAULT_MANIFEST_PATH = HITO2_MANIFEST_DIR / "query_manifest.csv"
+DEFAULT_SPLIT_PATH = HITO2_SPLIT_DIR / "query_splits.csv"
+DEFAULT_SPLIT_SUMMARY_PATH = HITO2_SPLIT_DIR / "query_splits_summary.json"
+
+DEFAULT_RANDOM_STATE = RANDOM_STATE
+DEFAULT_TRAIN_RATIO = 0.7
+DEFAULT_VAL_RATIO = 0.15
+DEFAULT_TEST_RATIO = 0.15
+DEFAULT_CNN_IMAGE_SIZE = (224, 224)
+DEFAULT_CLIP_MODEL_ID = CLIP_MODEL_ID
+DEFAULT_CLIP_EMBEDDING_BATCH_SIZE = CLIP_BATCH_SIZE
+
+DEFAULT_CLIP_MLP_HIDDEN_SIZES = (512, 256)
+DEFAULT_CLIP_MLP_DROPOUT = 0.2
+DEFAULT_CLIP_MLP_BATCH_SIZE = 64
+DEFAULT_CLIP_MLP_LR = 1e-3
+DEFAULT_CLIP_MLP_WEIGHT_DECAY = 1e-4
+DEFAULT_CLIP_MLP_EPOCHS = 50
+DEFAULT_CLIP_MLP_EARLY_STOPPING_PATIENCE = 8
+DEFAULT_CLIP_MLP_EARLY_STOPPING_MIN_DELTA = 1e-4
+DEFAULT_CLIP_MLP_USE_CLASS_WEIGHTS = True
+
+
+def ensure_hito2_output_directories() -> None:
+    """Create local output directories used by Hito 2 preparation utilities."""
+    for directory in (
+        HITO2_OUTPUT_DIR,
+        HITO2_MANIFEST_DIR,
+        HITO2_SPLIT_DIR,
+        HITO2_CLIP_MLP_OUTPUT_DIR,
+        HITO2_CLIP_MLP_METRICS_DIR,
+        HITO2_CLIP_MLP_FIGURES_DIR,
+        HITO2_CLIP_MLP_MODELS_DIR,
+        HITO2_CLIP_MLP_PREDICTIONS_DIR,
+        HITO2_CLIP_EMBEDDINGS_DIR,
+    ):
+        directory.mkdir(parents=True, exist_ok=True)
+
+
+def as_repo_relative(path: str | Path, root_dir: Path = ROOT_DIR) -> str:
+    """Convert an absolute or relative path into a repo-relative POSIX path."""
+    absolute_path = Path(path).resolve()
+    root_path = root_dir.resolve()
+
+    try:
+        return absolute_path.relative_to(root_path).as_posix()
+    except ValueError:
+        return absolute_path.as_posix()
